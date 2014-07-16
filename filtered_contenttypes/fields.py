@@ -29,7 +29,7 @@ class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
                 raise FilteredGenericForeignKeyFilteringException(
                     "For exact lookup, please pass a single Model instance.")
 
-        elif lookup_name == 'in':
+        elif lookup_name in ['in', 'in_raw']:
             if type(rhs) == QuerySet:
                 return rhs, None
 
@@ -56,7 +56,8 @@ class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
 
             if isinstance(rhs, QuerySet):
                 # QuerSet was passed. Don't fetch its items. Use server-side
-                # subselect, which will be way faster.
+                # subselect, which will be way faster. Get the content_type_id
+                # from django_content_type table.
 
                 compiler = rhs.query.get_compiler(connection=db)
 
@@ -85,8 +86,6 @@ class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
                 for elem in rhs:
                     if isinstance(elem, models.Model):
                         buf.append((ContentType.objects.get_for_model(elem).pk, elem.pk))
-                    elif isinstance(elem, tuple) and type(elem[0]) == int and type(elem[1]) == int and len(elem)==2:
-                        buf.append(elem)
                     else:
                         raise FilteredGenericForeignKeyFilteringException(
                             "Unknown type: %r" % type(elem))
@@ -96,6 +95,51 @@ class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
                 return query, buf
 
             raise NotImplementedError("You passed %r and I don't know what to do with it" % rhs)
+
+        elif lookup_name == 'in_raw':
+
+            if isinstance(rhs, QuerySet):
+                # Use the passed QuerSet as a 'raw' one - it selects 2 fields
+                # first is content_type_id, second is object_id
+
+                compiler = rhs.query.get_compiler(connection=db)
+                compiled_query, compiled_args = compiler.as_sql()
+
+                # XXX: HACK AHEAD. Perhaps there is a better way to change
+                # select, preferably by using extra. I need to have the proper
+                # order of columns AND the proper count of columns, which
+                # is no more, than two.
+                #
+                # Currently, even if I use "only", I have no control over
+                # the order of columns. And, if I use
+                # .extra(select=SortedDict([...]), I get the proper order
+                # of columns and the primary key and other two columns even
+                # if I did not specify them in the query.
+                #
+                # So, for now, let's split the query on first "FROM" and change
+                # the beginning part with my own SELECT:
+
+                compiled_query = "SELECT content_type_id, object_id FROM " + \
+                                 compiled_query.split("FROM", 1)[1]
+
+                return compiled_query, compiled_args
+
+            if is_iterable(rhs):
+                buf = []
+
+                for elem in rhs:
+                    if isinstance(elem, tuple) and type(elem[0]) == int and type(elem[1]) == int and len(elem)==2:
+                        buf.append(elem)
+                    else:
+                        raise FilteredGenericForeignKeyFilteringException(
+                            "If you pass a list of tuples as an argument, every tuple "
+                            "must have exeactly 2 elements and they must be integers")
+
+                query = ",".join(["%s"] * len(buf))
+                return query, buf
+
+            raise NotImplementedError("You passed %r and I don't know what to do with it" % rhs)
+
 
         else:
             raise FilteredGenericForeignKeyFilteringException(
@@ -108,7 +152,7 @@ class FilteredGenericForeignKeyLookup(Lookup):
         ct_attname = self.lhs.output_field.model._meta.get_field(
             self.lhs.output_field.ct_field).get_attname()
 
-        lhs = '("%s".%s, "%s".%s)' % (
+        lhs = '(%s."%s", %s."%s")' % (
             self.lhs.alias,
             self.lhs.output_field.ct_field + "_id",
             self.lhs.alias,
@@ -130,8 +174,13 @@ class FilteredGenericForeignKeyLookup_In(FilteredGenericForeignKeyLookup):
     lookup_name = 'in'
     operator = 'in'
 
+class FilteredGenericForeignKeyLookup_In_Raw(FilteredGenericForeignKeyLookup):
+    lookup_name = 'in_raw'
+    operator = 'in'
 
 FilteredGenericForeignKey.register_lookup(
     FilteredGenericForeignKeyLookup_Exact)
 FilteredGenericForeignKey.register_lookup(
     FilteredGenericForeignKeyLookup_In)
+FilteredGenericForeignKey.register_lookup(
+    FilteredGenericForeignKeyLookup_In_Raw)

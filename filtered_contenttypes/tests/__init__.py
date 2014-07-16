@@ -3,8 +3,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models.query_utils import Q
 
 from django.test import TestCase
+from django.utils.datastructures import SortedDict
 from filtered_contenttypes.tests.models import StorageRecord, Phone, Monitor, \
-    Laptop
+    Laptop, PromoItems
 
 
 class TestFilteredContentTypes(TestCase):
@@ -39,9 +40,9 @@ class TestFilteredContentTypes(TestCase):
         qry = StorageRecord.objects.filter(item__in=[self.l, self.p])
         self.assertEquals(qry.count(), 2)
 
-    def test_in_list_of_integer_tuples(self):
+    def test_in_raw_list_of_integer_tuples(self):
         # In some rare cases you might want this:
-        qry = StorageRecord.objects.filter(item__in=[
+        qry = StorageRecord.objects.filter(item__in_raw=[
             (ContentType.objects.get_for_model(self.l).pk, self.l.pk),
             (ContentType.objects.get_for_model(self.p).pk, self.p.pk)
             ])
@@ -50,3 +51,18 @@ class TestFilteredContentTypes(TestCase):
     def test_q_objects(self):
         qry = StorageRecord.objects.filter(Q(item=self.l) | Q(item=self.p))
         self.assertEquals(qry.count(), 2)
+
+
+    def test_in_raw_custom_sql_query(self):
+        PromoItems.objects.create(item=self.l)
+
+        promo_items = PromoItems.objects.filter(item__in=Laptop.objects.filter(memory=2048))
+        self.assertEquals(promo_items.count(), 1)
+
+        res = StorageRecord.objects.filter(item__in_raw=promo_items.extra(
+            select=SortedDict([
+                ('content_type_id', 'content_type_id'),
+                ('object_id', 'object_id')
+            ])).only("content_type_id", "object_id"))
+        self.assertEquals(res.count(), 1)
+        self.assertEquals(res[0].item, self.l)
