@@ -1,0 +1,4 @@
+AUTHORS
+=======
+
+* Michał Pasternak, <michal.dtz@gmail.com>
