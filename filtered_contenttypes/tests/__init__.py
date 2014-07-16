@@ -59,10 +59,6 @@ class TestFilteredContentTypes(TestCase):
         promo_items = PromoItems.objects.filter(item__in=Laptop.objects.filter(memory=2048))
         self.assertEquals(promo_items.count(), 1)
 
-        res = StorageRecord.objects.filter(item__in_raw=promo_items.extra(
-            select=SortedDict([
-                ('content_type_id', 'content_type_id'),
-                ('object_id', 'object_id')
-            ])).only("content_type_id", "object_id"))
+        res = StorageRecord.objects.filter(item__in_raw=promo_items)
         self.assertEquals(res.count(), 1)
         self.assertEquals(res[0].item, self.l)

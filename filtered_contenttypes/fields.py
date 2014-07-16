@@ -175,6 +175,13 @@ class FilteredGenericForeignKeyLookup_In(FilteredGenericForeignKeyLookup):
     operator = 'in'
 
 class FilteredGenericForeignKeyLookup_In_Raw(FilteredGenericForeignKeyLookup):
+    """
+    in_raw lookup will not try to get the content_type_id of the right hand
+    side QuerySet of the lookup, but instead it will re-write the query, so
+    it selects columns named 'content_type_id' and 'object_id' from the right-
+    hand side QuerySet. See comments in
+    FilteredGenericForeignKeyLookup.get_db_prep
+    """
     lookup_name = 'in_raw'
     operator = 'in'
 
