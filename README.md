@@ -12,30 +12,65 @@ Introduction
 Django supports a mechanism for storing a ForeignKey-like reference to any object, using the django.contrib.contenttypes app.
 The key, called GenericForeignKey is internally stored as 2 id fields, content_type_id and object_id.
 
-Current Django documentation says, that it is impossible to use GenericForeignKey in filter clauses. This package fixes that. The good thing is,
-that when using PostgreSQL, you can create a compound index on both fields and use them in queries. That's right, the SQL query looks like this:
+Current Django documentation says, that it is impossible to filter using GenericForeignKey field. In some use cases this may be a serious limitation of otherwise working ORM. This package fixes that. 
 
-.. code-block:: sql
+So, when your model looks like this:
 
+```python
+    from django.db import models
+    from django.contrib.contenttypes.models import ContentType
+    from django.contrib.contenttypes.fields import GenericForeignKey
+    
+    class Foo(models.Model):
+        content_type = models.ForeignKey(ContentType)
+        object_id = models.PositiveIntegerField()
+        item = GenericForeignKey('content_type', 'object_id')
+```
+All you need to use this package is to replace `GenericForeignKey` with `FilteredGenericForeignKey` like this:
+```python
+    from django.db import models
+    from django.contrib.contenttypes.models import ContentType
+    from django.contrib.contenttypes.fields import GenericForeignKey
+    from filtered_contenttypes.fields import FilteredGenericForeignKey
+    
+    class Foo(models.Model):
+        content_type = models.ForeignKey(ContentType)
+        object_id = models.PositiveIntegerField()
+        item = FilteredGenericForeignKey('content_type', 'object_id')
+```
+and then, you can use it in your application:
+```python
+    >>> Foo.objects.filter(item__in=SometItem.objects.filter(...))
+    [<Foo>, <Foo>, <Foo>]
+    >>> Foo.objects.filter(item=OtherItem.objects.get(pk=5))
+    [<Foo>]
+```
+
+Database benefits
+-----------------
+As the author of this package (ab)uses PostgreSQL on a daily basis, this package does no different. First, it is imporant, that you create a proper index, using
+two fields:
+```sql
+CREATE UNIQUE INDEX foo_item_idx ON foo(content_type_id, object_id)
+```
+From the database point of view, the generated query looks like this:
+```sql
     SELECT ... FROM ... WHERE (table.content_type_id, table.object_id) IN (...)
+```
+Yes - we are querying 2 fields at once. And this, in turn, uses that unique index created just a while ago (you created it, didn't you?). 
 
-and if you create a proper index for this table, like:
+Perhaps the best thing about this package in terms of scalability is, that when you pass a QuerySet to filtering function or a Q object, the query will be executed server-side. Using it like this:
 
-.. code-block:: sql
+```python
+    Foo.objects.filter(item__in=SomeOther.objects.filter(...))
+```
 
-      CREATE UNIQUE INDEX shopping_cart_item_idx ON shopping_cart_entry
-        USING BTREE(content_type, object_id);
-
-it will be used and your queries will be blazing fast.
-
-Another good thing in terms of scalability is, that when you pass a QuerySet to filtering function or a Q object, the query will be executed server-side, so with this package it is possible to have blazing-fast GenericForeignKey relations.
-
+will generate a *single* query. 
 
 Classes
-^^^^^^^
+-------
 
-`filtered_contenttypes.fields.FilteredGenericForeignKeyField`
-    A subclass of GenericForeignKey, that supports filtering.
+`filtered_contenttypes.fields.FilteredGenericForeignKeyField` - a subclass of GenericForeignKey, that supports filtering.
 
 How to use it
 -------------
