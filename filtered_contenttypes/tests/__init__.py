@@ -5,7 +5,7 @@ from django.db.models.query_utils import Q
 from django.test import TestCase
 from django.utils.datastructures import SortedDict
 from filtered_contenttypes.tests.models import StorageRecord, Phone, Monitor, \
-    Laptop, PromoItems
+    Laptop, PromoItems, Amalgamation_View
 
 
 class TestFilteredContentTypes(TestCase):
@@ -62,3 +62,13 @@ class TestFilteredContentTypes(TestCase):
         res = StorageRecord.objects.filter(item__in_raw=promo_items)
         self.assertEquals(res.count(), 1)
         self.assertEquals(res[0].item, self.l)
+
+    def test_amalgamation(self):
+        for elem in range(5):
+            Phone.objects.create(name='whatever, man')
+            Monitor.objects.create(brand='whatever, man')
+            Laptop.objects.create(memory=31337)
+
+        self.assertEquals(
+            Amalgamation_View.objects.all().count('fa'),
+            18)
