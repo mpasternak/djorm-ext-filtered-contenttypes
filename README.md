@@ -6,9 +6,7 @@ djorm-ext-filtered-contenttypes
 
 A GenericForeignKey, that can be filtered &amp; indexed server-side using subqueries.
 
-Supports Python 3. 
-
-Requires Django >= 1.7. 
+Supports Python 2.7 and 3.3. Requires Django 1.7. 
 
 Created for and tested with PosgreSQL - feel free to submit patches for other databases.
 
