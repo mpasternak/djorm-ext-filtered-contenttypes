@@ -15,7 +15,7 @@ install:
 
 script:
   - cd testing && python runtests.py
-  - coverage run --source=filtered_contenttypes python runtests.py
+  - coverage run --source=filtered_contenttypes runtests.py
 
 services:
   - postgresql
