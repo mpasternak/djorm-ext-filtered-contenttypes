@@ -37,6 +37,7 @@ class TestFilteredContentTypes(TestCase):
         self.assertEquals(res[0].item, self.l)
 
     def test_in_list_of_instances(self):
+
         qry = StorageRecord.objects.filter(item__in=[self.l, self.p])
         self.assertEquals(qry.count(), 2)
 
@@ -70,5 +71,5 @@ class TestFilteredContentTypes(TestCase):
             Laptop.objects.create(memory=31337)
 
         self.assertEquals(
-            Amalgamation_View.objects.all().count('fa'),
+            Amalgamation_View.objects.all().count(),
             18)

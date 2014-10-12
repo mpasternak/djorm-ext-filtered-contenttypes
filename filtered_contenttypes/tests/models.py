@@ -37,6 +37,7 @@ class StorageRecord(models.Model):
         app_label = 'tests'
 
 
+
 class PromoItems(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
