@@ -1,6 +1,7 @@
 djorm-ext-filtered-contenttypes
 ===============================
 
+[![Build Status](https://travis-ci.org/mpasternak/djorm-ext-filtered-contenttypes.svg?branch=master)](https://travis-ci.org/mpasternak/djorm-ext-filtered-contenttypes)
 
 A GenericForeignKey, that can be filtered &amp; indexed server-side using subqueries.
 
