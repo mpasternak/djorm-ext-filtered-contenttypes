@@ -15,7 +15,7 @@ setup(
     author_email = 'michal.dtz@gmail.com',
     maintainer = 'Michal Pasternak',
     maintainer_email = 'michal.dtz@gmail.com',
-    packages = find_packages(),
+    packages = ["filtered_contenttypes"],
     include_package_data = False,
     install_requires = [],
     zip_safe = False,
@@ -28,6 +28,8 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.3",
         "Topic :: Software Development :: Libraries",
         "Topic :: Utilities",
     ]
