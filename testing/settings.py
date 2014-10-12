@@ -17,6 +17,13 @@ DATABASES = {
     }
 }
 
+
+if 'TRAVIS' in os.environ:
+    DATABASES['default']['NAME'] = 'travisci'
+    DATABASES['default']['HOST'] = 'localhost'
+    DATABASES['default']['PORT'] = ''
+
+
 TIME_ZONE = 'America/Chicago'
 LANGUAGE_CODE = 'en-us'
 ADMIN_MEDIA_PREFIX = '/static/admin/'
