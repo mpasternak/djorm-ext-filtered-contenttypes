@@ -1,6 +1,10 @@
 djorm-ext-filtered-contenttypes
 ===============================
 
+Worked with django 1.7c . Seems that after some changes in how .filter works, it stopped working for 1.7 . I'm investigating the issue, but I would not count on quick solution. 
+===========================================================================================================================
+
+
 A GenericForeignKey, that can be filtered &amp; indexed server-side using subqueries.
 
 Requires Django >= 1.7. Created for and tested with PosgreSQL - feel free to submit patches for other databases.
