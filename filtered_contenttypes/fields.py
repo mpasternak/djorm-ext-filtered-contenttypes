@@ -25,6 +25,7 @@ class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
         # https://github.com/django/django/commit/572885729e028eae2f2b823ef87543b7c66bdb10
         # thanks to MarkusH @ freenode for help
         self.attname = self.related = '(this is a hack)'
+        # this is needed when filtering(this__contains=x, this__not_contains=y)
         self.null = False
         GenericForeignKey.__init__(self, *args, **kw)
 
