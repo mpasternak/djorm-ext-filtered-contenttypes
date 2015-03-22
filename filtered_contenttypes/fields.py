@@ -20,6 +20,9 @@ class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
     filtering in Django ORM.
     """
 
+    # For django/db/models/sql/query.py is_nullable
+    null = False
+
     def __init__(self, *args, **kw):
         # The line below is needed to bypass this
         # https://github.com/django/django/commit/572885729e028eae2f2b823ef87543b7c66bdb10
