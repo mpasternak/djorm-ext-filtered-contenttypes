@@ -56,3 +56,5 @@ docs/_build/
 # PyCharm
 .idea/
 testing/venv
+
+*~

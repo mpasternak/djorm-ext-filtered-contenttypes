@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, django
 
 sys.path.insert(0, '..')
 
@@ -12,7 +12,7 @@ DATABASES = {
         'NAME': 'test',
         'USER': os.getenv("PGUSER", "postgres"),
         'PASSWORD': os.getenv("PGPASSWORD", ""),
-        'HOST': os.getenv("PGHOST", "jenkins"),
+        'HOST': os.getenv("PGHOST", "127.0.0.1"),
         'PORT': os.getenv("PGPORT", "5432"),
     }
 }
@@ -36,6 +36,7 @@ INSTALLED_APPS = (
     'filtered_contenttypes.tests',
 )
 
-TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner'
+if django.VERSION < (1,7):
+    TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner'
 
 MIDDLEWARE_CLASSES = []
