@@ -23,3 +23,8 @@ services:
 
 after_success:
   coveralls
+
+matrix:
+  exclude:
+    - python: 3.5
+      env: DJANGO=1.7
