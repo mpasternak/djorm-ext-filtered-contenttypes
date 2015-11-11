@@ -5,8 +5,8 @@ from django.db.models import Lookup
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.lookups import RegisterLookupMixin
 from django.db.models.query import QuerySet
+from django.utils.functional import cached_property
 from django.utils.itercompat import is_iterable
-
 
 from django.db import models
 
@@ -16,12 +16,22 @@ class FilteredGenericForeignKeyFilteringException(Exception):
 
 
 class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
-    """This is a GenericForeignKeyField, that can be used to perform
+    """This is a kind of GenericForeignKeyField, that can be used to perform
     filtering in Django ORM.
     """
 
     # For django/db/models/sql/query.py is_nullable
     null = False
+
+    # Bypass check introduced in Django 1.8 in django/db/models/sql/query.py line 1372
+    related_model = "(this is a hack)"
+
+    class FakeHackModel:
+        class _meta:
+            concrete_model = None
+
+    model = FakeHackModel
+    # End of hack for query.py line 1372
 
     def __init__(self, *args, **kw):
         # The line below is needed to bypass this
@@ -54,7 +64,6 @@ class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
                 "Lookup %s not supported." % lookup_name)
 
         return rhs, None
-
 
     def get_db_prep_lookup(self, lookup_name, param, db, prepared, **kw):
 
@@ -102,7 +111,6 @@ class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
                         raise FilteredGenericForeignKeyFilteringException(
                             "Unknown type: %r" % type(elem))
 
-
                 query = ",".join(["%s"] * len(buf))
                 return query, buf
 
@@ -111,7 +119,7 @@ class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
         elif lookup_name == 'in_raw':
 
             if isinstance(rhs, QuerySet):
-                # Use the passed QuerSet as a 'raw' one - it selects 2 fields
+                # Use the passed QuerySet as a 'raw' one - it selects 2 fields
                 # first is content_type_id, second is object_id
 
                 compiler = rhs.query.get_compiler(connection=db)
@@ -140,7 +148,7 @@ class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
                 buf = []
 
                 for elem in rhs:
-                    if isinstance(elem, tuple) and type(elem[0]) == int and type(elem[1]) == int and len(elem)==2:
+                    if isinstance(elem, tuple) and type(elem[0]) == int and type(elem[1]) == int and len(elem) == 2:
                         buf.append(elem)
                     else:
                         raise FilteredGenericForeignKeyFilteringException(
@@ -156,7 +164,22 @@ class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
         else:
             raise FilteredGenericForeignKeyFilteringException(
                 "Unsupported lookup_name: %r" % lookup_name)
-    pass
+
+    # Copy-paste from Django 1.8 django/db/models/fields/__init__.py class Field
+    def get_col(self, alias, output_field=None):
+        if output_field is None:
+            output_field = self
+        if alias != self.model._meta.db_table or output_field != self:
+            from django.db.models.expressions import Col
+            return Col(alias, self, output_field)
+        else:
+            return self.cached_col
+
+    @cached_property
+    def cached_col(self):
+        from django.db.models.expressions import Col
+        return Col(self.model._meta.db_table, self)
+    # End of copy-paste from class Field
 
 
 class FilteredGenericForeignKeyLookup(Lookup):
@@ -186,6 +209,7 @@ class FilteredGenericForeignKeyLookup_In(FilteredGenericForeignKeyLookup):
     lookup_name = 'in'
     operator = 'in'
 
+
 class FilteredGenericForeignKeyLookup_In_Raw(FilteredGenericForeignKeyLookup):
     """
     in_raw lookup will not try to get the content_type_id of the right hand
@@ -197,9 +221,7 @@ class FilteredGenericForeignKeyLookup_In_Raw(FilteredGenericForeignKeyLookup):
     lookup_name = 'in_raw'
     operator = 'in'
 
-FilteredGenericForeignKey.register_lookup(
-    FilteredGenericForeignKeyLookup_Exact)
-FilteredGenericForeignKey.register_lookup(
-    FilteredGenericForeignKeyLookup_In)
-FilteredGenericForeignKey.register_lookup(
-    FilteredGenericForeignKeyLookup_In_Raw)
+
+FilteredGenericForeignKey.register_lookup(FilteredGenericForeignKeyLookup_Exact)
+FilteredGenericForeignKey.register_lookup(FilteredGenericForeignKeyLookup_In)
+FilteredGenericForeignKey.register_lookup(FilteredGenericForeignKeyLookup_In_Raw)

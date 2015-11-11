@@ -1,9 +1,8 @@
 # -*- encoding: utf-8 -*-
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.query_utils import Q
-
 from django.test import TestCase
-from django.utils.datastructures import SortedDict
+
 from filtered_contenttypes.tests.models import StorageRecord, Phone, Monitor, \
     Laptop, PromoItems, Amalgamation_View
 
@@ -46,13 +45,12 @@ class TestFilteredContentTypes(TestCase):
         qry = StorageRecord.objects.filter(item__in_raw=[
             (ContentType.objects.get_for_model(self.l).pk, self.l.pk),
             (ContentType.objects.get_for_model(self.p).pk, self.p.pk)
-            ])
+        ])
         self.assertEquals(qry.count(), 2)
 
     def test_q_objects(self):
         qry = StorageRecord.objects.filter(Q(item=self.l) | Q(item=self.p))
         self.assertEquals(qry.count(), 2)
-
 
     def test_in_raw_custom_sql_query(self):
         PromoItems.objects.create(item=self.l)
