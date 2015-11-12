@@ -129,6 +129,10 @@ Now, let's play:
 Changelog
 ---------
 
+**0.3**
+
+- Support 2.7, 3.5 with Django 1.7, 1.8 and 1.9
+
 **0.1**
 
 - Initial release
