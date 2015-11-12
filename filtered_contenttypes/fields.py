@@ -33,6 +33,9 @@ class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
     model = FakeHackModel
     # End of hack for query.py line 1372
 
+    # Needed to fix https://code.djangoproject.com/ticket/25747 for Django 1.9
+    is_relation = False
+
     def __init__(self, *args, **kw):
         # The line below is needed to bypass this
         # https://github.com/django/django/commit/572885729e028eae2f2b823ef87543b7c66bdb10
