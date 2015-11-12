@@ -26,5 +26,4 @@ after_success:
 
 matrix:
   exclude:
-    - python: 3.5
-      	env: DJANGO=1.7
+    - env: DJANGO=1.7
