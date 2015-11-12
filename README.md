@@ -82,7 +82,7 @@ How to use it
 
 Just use FilteredGenericForeignKey instead of GenericForeignKey field. There should be no side-effects, as the only new functionality is the filter lookups.
 
-.. code-block:: python
+```python
 
     from filtered_contenttypes.fields import FilteredGenericForeignKey
     from django.db import models
@@ -102,13 +102,14 @@ Just use FilteredGenericForeignKey instead of GenericForeignKey field. There sho
 
         item = FilteredGenericForeignKey('content_type', 'object_id')
         quantity = models.PositiveIntegerField()
+```
 
 Now, somewhere, preferably in your migrations, create a compound index for
 the GenericForeignKey:
 
 Now, let's play:
 
-.. code-block:: python
+```python
 
     # After having some items in the cart:
 
@@ -124,6 +125,7 @@ Now, let's play:
     # in some cases, it may be useful to query directly for a list of
     # (content_type_id, object_id) entries.
     ShoppingCart.objects.filter(item__in=[(3,2), (3,3), (3,4)])
+```
 
 
 Changelog
