@@ -6,7 +6,7 @@ GenericForeignKey with filtering capabilities for Django ORM + PostgreSQL
 
 setup(
     name="djorm-ext-filtered-contenttypes",
-    version='0.3.0',
+    version='0.3.1',
     url='https://github.com/mpasternak/djorm-ext-filtered-contenttypes',
     license='MIT',
     platforms=['OS Independent'],
