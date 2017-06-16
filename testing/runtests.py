@@ -10,4 +10,6 @@ if __name__ == "__main__":
     django.setup()
 
     args = sys.argv[1:]
-    call_command("test", 'filtered_contenttypes', *args, verbosity=0, interactive=False)
+    if not args:
+        args = ["filtered_contenttypes",]
+    call_command("test", *args, verbosity=0, interactive=False)

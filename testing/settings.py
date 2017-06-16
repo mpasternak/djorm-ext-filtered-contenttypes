@@ -9,7 +9,7 @@ TEMPLATE_DEBUG = DEBUG
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'test',
+        'NAME': 'djorm_ext_filtered_contenttypes_%s' % django.get_version(),
         'USER': os.getenv("PGUSER", "postgres"),
         'PASSWORD': os.getenv("PGPASSWORD", ""),
         'HOST': os.getenv("PGHOST", "127.0.0.1"),
