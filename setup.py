@@ -18,7 +18,7 @@ setup(
     packages=["filtered_contenttypes"],
     include_package_data=False,
     install_requires=[
-        "Django>=1.7,<=1.10"
+        "Django>=1.7,<1.12"
     ],
     zip_safe=False,
     classifiers=[
