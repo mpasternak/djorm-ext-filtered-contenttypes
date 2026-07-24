@@ -2,7 +2,8 @@ djorm-ext-filtered-contenttypes
 ===============================
 
 [![Tests](https://github.com/mpasternak/djorm-ext-filtered-contenttypes/actions/workflows/tests.yml/badge.svg)](https://github.com/mpasternak/djorm-ext-filtered-contenttypes/actions/workflows/tests.yml)
-![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)
+[![PyPI Version](https://img.shields.io/pypi/v/djorm-ext-filtered-contenttypes)](https://pypi.org/project/djorm-ext-filtered-contenttypes/)
+[![Python Version](https://img.shields.io/pypi/pyversions/djorm-ext-filtered-contenttypes)](https://pypi.org/project/djorm-ext-filtered-contenttypes/)
 ![Django](https://img.shields.io/badge/django-5.2%20%7C%206.0-blue)
 [![License](https://img.shields.io/github/license/mpasternak/djorm-ext-filtered-contenttypes)](LICENSE)
 
