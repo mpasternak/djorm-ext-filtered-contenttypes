@@ -62,3 +62,31 @@ docs/_build/
 testing/venv
 
 *~
+
+# Testing
+.pytest_cache/
+
+# Additional virtual environments
+venv/
+ENV/
+
+# Editors
+.vscode/
+*.swp
+*.swo
+
+# Build eggs / distribution artifacts
+.eggs/
+*$py.class
+*.tar.gz
+*.whl
+
+# macOS
+.DS_Store
+.AppleDouble
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
