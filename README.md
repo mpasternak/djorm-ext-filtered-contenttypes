@@ -4,17 +4,52 @@ djorm-ext-filtered-contenttypes
 [![Tests](https://github.com/mpasternak/djorm-ext-filtered-contenttypes/actions/workflows/tests.yml/badge.svg)](https://github.com/mpasternak/djorm-ext-filtered-contenttypes/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)
 ![Django](https://img.shields.io/badge/django-5.2%20%7C%206.0-blue)
+[![License](https://img.shields.io/github/license/mpasternak/djorm-ext-filtered-contenttypes)](LICENSE)
 
 A GenericForeignKey, that can be filtered & indexed server-side using subqueries.
 
-Targets Django 5.2 LTS and 6.0 on Python 3.10–3.14.
+Supports Django 5.2 LTS and 6.0 on Python 3.10–3.14. (Previously: Django 1.7–1.11 on Python 2.7/3.5/3.6.)
 
-> **Note:** the packaging and tooling have been modernised (uv, `pyproject.toml`,
-> pytest, GitHub Actions). The field internals still rely on Django 1.x APIs, so a
-> port to modern Django is in progress and the test suite does not yet pass on
-> 5.2/6.0 — see the CI status above. (Historically: Django 1.7–1.11 on Python 2.7/3.5/3.6.)
+Created for and tested with PostgreSQL - feel free to submit patches for other databases.
 
-Created for and tested with PosgreSQL - feel free to submit patches for other databases.
+
+Features
+--------
+
+- Filter a `GenericForeignKey` server-side: `.filter(item=obj)`, `.filter(item__in=queryset)`, `.filter(item__in=[obj1, obj2])`.
+- Passing a `QuerySet` builds a **single** SQL query using a server-side subselect — no N+1, no pulling primary keys into Python.
+- Compound `(content_type_id, object_id) IN (...)` lookups that can use a compound index for fast filtering.
+- An `in_raw` lookup for advanced cases: pass a list of `(content_type_id, object_id)` integer tuples, or a QuerySet that already selects those two columns.
+- Works inside `Q()` objects: `.filter(Q(item=a) | Q(item=b))`.
+
+
+Installation
+------------
+
+Using [uv](https://docs.astral.sh/uv/) (recommended):
+
+```bash
+uv add djorm-ext-filtered-contenttypes
+```
+
+Using pip:
+
+```bash
+pip install djorm-ext-filtered-contenttypes
+```
+
+Requires Python 3.10+ and Django 5.2 or 6.0. PostgreSQL is required — the filtering relies on PostgreSQL-specific compound-column subqueries.
+
+
+Supported versions
+------------------
+
+Every combination below is exercised in CI:
+
+| Django  | 3.10 | 3.11 | 3.12 | 3.13 | 3.14 |
+|---------|:----:|:----:|:----:|:----:|:----:|
+| 5.2 LTS |  ✓   |  ✓   |  ✓   |  ✓   |  ✓   |
+| 6.0     |  —   |  —   |  ✓   |  ✓   |  ✓   |
 
 
 Introduction
@@ -144,3 +179,9 @@ Changelog
 **0.1**
 
 - Initial release
+
+
+License
+-------
+
+MIT — see [LICENSE](LICENSE) for details.
