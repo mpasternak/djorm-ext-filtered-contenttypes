@@ -38,6 +38,8 @@ dependencies = [
 dev = [
     "psycopg2-binary",
     "bumpver",
+    "pytest",
+    "pytest-django",
 ]
 
 [project.urls]
@@ -53,6 +55,11 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "settings"
+pythonpath = ["testing"]
+python_files = ["test_*.py", "tests.py"]
 
 [tool.bumpver]
 current_version = "0.5.0"
