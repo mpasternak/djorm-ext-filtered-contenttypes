@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('object_id', models.PositiveIntegerField()),
                 ('quantity', models.IntegerField()),
-                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
+                ('content_type', models.ForeignKey(to='contenttypes.ContentType', on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -60,5 +60,8 @@ class Migration(migrations.Migration):
         # content_type_id and object_id, thus making queries for items extremely
         # fast.
         #
-        RunSQL("CREATE UNIQUE INDEX tests_storagerecord_content_type_idx ON tests_storagerecord USING BTREE(content_type_id, object_id)")
+        RunSQL(
+            "CREATE UNIQUE INDEX tests_storagerecord_content_type_idx "
+            "ON tests_storagerecord USING BTREE(content_type_id, object_id)"
+        )
     ]

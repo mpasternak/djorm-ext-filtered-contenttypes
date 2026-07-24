@@ -28,7 +28,7 @@ def amalgamate_sql(app, model, extra_fields=None, table_name=None,
                 ) U0;
     """
 
-    if extra_fields == None:
+    if extra_fields is None:
         extra_fields = []
 
     extra_fields = ", ".join(extra_fields)

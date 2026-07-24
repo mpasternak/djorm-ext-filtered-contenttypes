@@ -27,7 +27,7 @@ class Laptop(models.Model):
 
 
 class StorageRecord(models.Model):
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     item = FilteredGenericForeignKey('content_type', 'object_id')
 
@@ -37,7 +37,7 @@ class StorageRecord(models.Model):
         app_label = 'tests'
 
 class PromoItems(models.Model):
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     item = FilteredGenericForeignKey('content_type', 'object_id')
 
@@ -52,7 +52,7 @@ class Amalgamation_View(models.Model):
     """
 
     item = FilteredGenericForeignKey('content_type', 'object_id')
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
 
     # This is the fake ID. Yes, this is pretty redundnat, as we have

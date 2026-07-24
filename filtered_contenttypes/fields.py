@@ -5,46 +5,43 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db.models import Lookup, Model
 
 from django.contrib.contenttypes.models import ContentType
-from django.db.models.lookups import RegisterLookupMixin
 from django.db.models.query import QuerySet
 from django.db.models.sql.query import Query
 from django.utils.functional import cached_property
-from django.utils.itercompat import is_iterable
+
+
+def is_iterable(x):
+    """Return True if ``x`` is iterable.
+
+    Replacement for ``django.utils.itercompat.is_iterable``, which was
+    removed in Django 5.0.
+    """
+    try:
+        iter(x)
+    except TypeError:
+        return False
+    return True
 
 
 class FilteredGenericForeignKeyFilteringException(Exception):
     pass
 
 
-class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
+class FilteredGenericForeignKey(GenericForeignKey):
     """This is a kind of GenericForeignKeyField, that can be used to perform
     filtering in Django ORM.
     """
 
-    # For django/db/models/sql/query.py is_nullable
-    null = False
-
-    # Bypass check introduced in Django 1.8 in django/db/models/sql/query.py line 1372
-    related_model = "(this is a hack)"
-
-    class FakeHackModel:
-        class _meta:
-            concrete_model = None
-
-    model = FakeHackModel
-    # End of hack for query.py line 1372
-
-    # Needed to fix https://code.djangoproject.com/ticket/25747 for Django 1.9
-    is_relation = False
-
-    def __init__(self, *args, **kw):
-        # The line below is needed to bypass this
-        # https://github.com/django/django/commit/572885729e028eae2f2b823ef87543b7c66bdb10
-        # thanks to MarkusH @ freenode for help
-        self.attname = self.related = '(this is a hack)'
-        # this is needed when filtering(this__contains=x, this__not_contains=y)
-        self.null = False
-        GenericForeignKey.__init__(self, *args, **kw)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # This field supports server-side filtering through the custom lookups
+        # registered below, but it does not participate in Django's relation
+        # graph or reverse querying. GenericForeignKey.__init__ force-sets
+        # is_relation = True; presenting it as a non-relation instead lets the
+        # ORM resolve ``.filter(item=...)`` / ``.filter(item__in=...)`` without
+        # tripping the "cannot be used for reverse querying" check, and keeps it
+        # out of the reverse-relation graph.
+        self.is_relation = False
 
     def get_prep_lookup(self, lookup_name, rhs):
         """
@@ -56,7 +53,7 @@ class FilteredGenericForeignKey(RegisterLookupMixin, GenericForeignKey):
                     "For exact lookup, please pass a single Model instance.")
 
         elif lookup_name in ['in', 'in_raw']:
-            if type(rhs) == QuerySet:
+            if isinstance(rhs, QuerySet):
                 return rhs, None
 
             if not is_iterable(rhs):
@@ -98,9 +95,6 @@ class FilteredGenericForeignKeyLookup(Lookup):
         return (",".join(["%s"]*len(value)),ret)
 
     def as_sql(self, qn, connection):
-        ct_attname = self.lhs.output_field.model._meta.get_field(
-            self.lhs.output_field.ct_field).get_attname()
-
         lhs = '(%s."%s", %s."%s")' % (
             self.lhs.alias,
             self.lhs.output_field.ct_field + "_id",
@@ -228,8 +222,9 @@ class FilteredGenericForeignKeyLookup_In_Raw(FilteredGenericForeignKeyLookup):
             buf = []
 
             for elem in value:
-                if isinstance(elem, tuple) and type(elem[0]) == int and type(
-                        elem[1]) == int and len(elem) == 2:
+                if (isinstance(elem, tuple) and len(elem) == 2
+                        and isinstance(elem[0], int)
+                        and isinstance(elem[1], int)):
                     buf.append(elem)
                 else:
                     raise FilteredGenericForeignKeyFilteringException(

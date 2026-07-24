@@ -25,20 +25,20 @@ class TestFilteredContentTypes(TestCase):
             qry = StorageRecord.objects.filter(item__in=Phone.objects.filter(name__startswith='Sony'))
             res = list(qry)
 
-        self.assertEquals(len(res), 1)
-        self.assertEquals(res[0].item, self.p)
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res[0].item, self.p)
 
     def test_single_object(self):
         qry = StorageRecord.objects.filter(item=self.l)
         res = list(qry)
 
-        self.assertEquals(len(res), 1)
-        self.assertEquals(res[0].item, self.l)
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res[0].item, self.l)
 
     def test_in_list_of_instances(self):
 
         qry = StorageRecord.objects.filter(item__in=[self.l, self.p])
-        self.assertEquals(qry.count(), 2)
+        self.assertEqual(qry.count(), 2)
 
     def test_in_raw_list_of_integer_tuples(self):
         # In some rare cases you might want this:
@@ -46,21 +46,21 @@ class TestFilteredContentTypes(TestCase):
             (ContentType.objects.get_for_model(self.l).pk, self.l.pk),
             (ContentType.objects.get_for_model(self.p).pk, self.p.pk)
         ])
-        self.assertEquals(qry.count(), 2)
+        self.assertEqual(qry.count(), 2)
 
     def test_q_objects(self):
         qry = StorageRecord.objects.filter(Q(item=self.l) | Q(item=self.p))
-        self.assertEquals(qry.count(), 2)
+        self.assertEqual(qry.count(), 2)
 
     def test_in_raw_custom_sql_query(self):
         PromoItems.objects.create(item=self.l)
 
         promo_items = PromoItems.objects.filter(item__in=Laptop.objects.filter(memory=2048))
-        self.assertEquals(promo_items.count(), 1)
+        self.assertEqual(promo_items.count(), 1)
 
         res = StorageRecord.objects.filter(item__in_raw=promo_items)
-        self.assertEquals(res.count(), 1)
-        self.assertEquals(res[0].item, self.l)
+        self.assertEqual(res.count(), 1)
+        self.assertEqual(res[0].item, self.l)
 
     def test_amalgamation(self):
         for elem in range(5):
@@ -68,6 +68,6 @@ class TestFilteredContentTypes(TestCase):
             Monitor.objects.create(brand='whatever, man')
             Laptop.objects.create(memory=31337)
 
-        self.assertEquals(
+        self.assertEqual(
             Amalgamation_View.objects.all().count(),
             18)
