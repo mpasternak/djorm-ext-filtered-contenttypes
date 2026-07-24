@@ -45,5 +45,9 @@ jobs:
           name: dist
           path: dist/
 
+      # pypa/gh-action-pypi-publish is a Docker container action; its image is
+      # published to ghcr.io tagged by release version, NOT by commit SHA, so a
+      # raw-SHA pin fails with "manifest unknown". Pin to the immutable release
+      # tag instead (PyPA is a trusted publisher).
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@2834a314042ef964da07689278dd1e9d773e8afd # v1.14.1
+        uses: pypa/gh-action-pypi-publish@v1.14.1
