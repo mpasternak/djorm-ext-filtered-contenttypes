@@ -1,0 +1,92 @@
+name: Tests
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Derived from requires-python (>=3.10) + Django constraint (>=5.2) and the
+        # upstream-supported Django series (5.2 LTS, 6.0) as of 2026-07.
+        # Recompute this list on every re-run — do not hardcode long-term.
+        include:
+          # Django 5.2 LTS (Python 3.10-3.14)
+          - { python-version: "3.10", django-version: "5.2" }
+          - { python-version: "3.11", django-version: "5.2" }
+          - { python-version: "3.12", django-version: "5.2" }
+          - { python-version: "3.13", django-version: "5.2" }
+          - { python-version: "3.14", django-version: "5.2" }
+          # Django 6.0 (Python 3.12+)
+          - { python-version: "3.12", django-version: "6.0" }
+          - { python-version: "3.13", django-version: "6.0" }
+          - { python-version: "3.14", django-version: "6.0" }
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGHOST: localhost
+      PGPORT: 5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies (project + Django ${{ matrix.django-version }})
+        run: |
+          uv sync --all-extras
+          uv pip install "django~=${{ matrix.django-version }}.0"
+
+      - name: Run tests
+        run: uv run pytest
+
+  lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+
+      - name: Set up Python
+        run: uv python install 3.14
+
+      - name: Lint with ruff (informational)
+        run: uvx ruff check . || true
+
+      - name: Check formatting with ruff (informational)
+        run: uvx ruff format --check . || true

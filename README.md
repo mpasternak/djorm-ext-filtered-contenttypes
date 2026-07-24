@@ -1,12 +1,18 @@
 djorm-ext-filtered-contenttypes
 ===============================
 
-[![Build Status](https://travis-ci.org/mpasternak/djorm-ext-filtered-contenttypes.svg?branch=master)](https://travis-ci.org/mpasternak/djorm-ext-filtered-contenttypes)
-[![Coverage Status](https://img.shields.io/coveralls/mpasternak/djorm-ext-filtered-contenttypes.svg)](https://coveralls.io/r/mpasternak/djorm-ext-filtered-contenttypes)
+[![Tests](https://github.com/mpasternak/djorm-ext-filtered-contenttypes/actions/workflows/tests.yml/badge.svg)](https://github.com/mpasternak/djorm-ext-filtered-contenttypes/actions/workflows/tests.yml)
+![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)
+![Django](https://img.shields.io/badge/django-5.2%20%7C%206.0-blue)
 
-A GenericForeignKey, that can be filtered &amp; indexed server-side using subqueries.
+A GenericForeignKey, that can be filtered & indexed server-side using subqueries.
 
-Supports Django 1.7, 1.8, 1.9, 1.10, 1.11 on Python 2.7, 3.5 and 3.6.
+Targets Django 5.2 LTS and 6.0 on Python 3.10–3.14.
+
+> **Note:** the packaging and tooling have been modernised (uv, `pyproject.toml`,
+> pytest, GitHub Actions). The field internals still rely on Django 1.x APIs, so a
+> port to modern Django is in progress and the test suite does not yet pass on
+> 5.2/6.0 — see the CI status above. (Historically: Django 1.7–1.11 on Python 2.7/3.5/3.6.)
 
 Created for and tested with PosgreSQL - feel free to submit patches for other databases.
 
@@ -17,7 +23,7 @@ Introduction
 Django supports a mechanism for storing a ForeignKey-like reference to any object, using the django.contrib.contenttypes app.
 The key, called GenericForeignKey is internally stored as 2 id fields, content_type_id and object_id.
 
-Current Django documentation says, that it is impossible to filter using GenericForeignKey field. In some use cases this may be a serious limitation of otherwise working ORM. This package fixes that. 
+Current Django documentation says, that it is impossible to filter using GenericForeignKey field. In some use cases this may be a serious limitation of otherwise working ORM. This package fixes that.
 
 So, when your model looks like this:
 
@@ -25,7 +31,7 @@ So, when your model looks like this:
     from django.db import models
     from django.contrib.contenttypes.models import ContentType
     from django.contrib.contenttypes.fields import GenericForeignKey
-    
+
     class Foo(models.Model):
         content_type = models.ForeignKey(ContentType)
         object_id = models.PositiveIntegerField()
@@ -37,7 +43,7 @@ All you need to use this package is to replace `GenericForeignKey` with `Filtere
     from django.contrib.contenttypes.models import ContentType
     from django.contrib.contenttypes.fields import GenericForeignKey
     from filtered_contenttypes.fields import FilteredGenericForeignKey
-    
+
     class Foo(models.Model):
         content_type = models.ForeignKey(ContentType)
         object_id = models.PositiveIntegerField()
@@ -62,7 +68,7 @@ From the database point of view, the generated query looks like this:
 ```sql
     SELECT ... FROM ... WHERE (table.content_type_id, table.object_id) IN (...)
 ```
-Yes - we are querying 2 fields at once. And this, in turn, uses that unique index created just a while ago (you created it, didn't you?). 
+Yes - we are querying 2 fields at once. And this, in turn, uses that unique index created just a while ago (you created it, didn't you?).
 
 Perhaps the best thing about this package in terms of scalability is, that when you pass a QuerySet to filtering function or a Q object, the query will be executed server-side. Using it like this:
 
@@ -70,7 +76,7 @@ Perhaps the best thing about this package in terms of scalability is, that when 
     Foo.objects.filter(item__in=SomeOther.objects.filter(...))
 ```
 
-will generate a *single* query. 
+will generate a *single* query.
 
 Classes
 -------
