@@ -172,6 +172,13 @@ Now, let's play:
 Changelog
 ---------
 
+**0.5.1**
+
+- Support Django 5.2 LTS and 6.0 on Python 3.10–3.14 (ported off the old Django 1.x internals).
+- Modern packaging: uv + `pyproject.toml`, pytest, GitHub Actions CI, pre-commit (ruff).
+- Drop support for Django 1.7–1.11 and Python 2.7/3.5/3.6. Resolves the legacy Django 1.x
+  security advisories that applied to the old dependency constraint.
+
 **0.3**
 
 - Support 2.7, 3.5 with Django 1.7, 1.8 and 1.9
