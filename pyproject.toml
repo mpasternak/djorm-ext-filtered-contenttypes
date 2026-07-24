@@ -37,6 +37,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "psycopg2-binary",
+    "bumpver",
 ]
 
 [project.urls]
@@ -46,3 +47,17 @@ Issues = "https://github.com/mpasternak/djorm-ext-filtered-contenttypes/issues"
 
 [tool.setuptools]
 packages = ["filtered_contenttypes"]
+
+[tool.bumpver]
+current_version = "0.5.0"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message = "Bump version {old_version} -> {new_version}"
+commit = true
+tag = true
+push = false
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    'current_version = "{version}"',
+    'version = "{version}"',
+]
