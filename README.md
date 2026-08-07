@@ -174,14 +174,16 @@ Now, let's play:
 Changelog
 ---------
 
-**Unreleased**
+**0.6.0**
 
 - Added support for Django 6.1 (Python 3.12+), tested in CI alongside 5.2 LTS and 6.0.
-- Fixed lookup SQL generation for Django 6.1, which now quotes generated table aliases
-  (`"V0"` instead of `V0`). The compound `(content_type_id, object_id)` left-hand side is
-  now quoted through the compiler instead of being interpolated bare, which previously made
-  PostgreSQL fail with `missing FROM-clause entry for table "v0"` when a filtered queryset
-  was used as the right-hand side of `item__in_raw`.
+- Fixed lookup SQL generation for Django 6.1, which now quotes generated table aliases in
+  the `FROM` clause (`"V0"` instead of `V0`). PostgreSQL folds unquoted identifiers to lower
+  case, so the bare alias hardcoded in `Lookup.as_sql()` referred to a non-existent `v0` and
+  queries failed with `ProgrammingError: missing FROM-clause entry for table "v0"`. The
+  compound `(content_type_id, object_id)` left-hand side is now quoted through the compiler:
+  the quoting helper is selected with `getattr`, preferring `quote_name()` (Django 6.1+) and
+  falling back to `quote_name_unless_alias()` on 5.2/6.0.
 
 **0.5.1**
 
