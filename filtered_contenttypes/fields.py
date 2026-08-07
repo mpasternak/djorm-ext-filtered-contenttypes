@@ -95,10 +95,21 @@ class FilteredGenericForeignKeyLookup(Lookup):
         return (",".join(["%s"]*len(value)),ret)
 
     def as_sql(self, qn, connection):
+        # Quote the table/alias exactly the way the compiler does for every
+        # other column reference in this query. Django 6.1 started quoting
+        # generated table aliases in the FROM clause ("V0" instead of V0), and
+        # PostgreSQL folds unquoted identifiers to lower case — so hardcoding
+        # the bare alias here produced references to a non-existent "v0".
+        #
+        # SQLCompiler.quote_name() exists since Django 6.1; on 5.2/6.0 the
+        # equivalent (and only) helper is quote_name_unless_alias(), which is
+        # deprecated in 6.1 and removed in 7.0.
+        quote_name = getattr(qn, "quote_name", None) or qn.quote_name_unless_alias
+        alias = quote_name(self.lhs.alias)
         lhs = '(%s."%s", %s."%s")' % (
-            self.lhs.alias,
+            alias,
             self.lhs.output_field.ct_field + "_id",
-            self.lhs.alias,
+            alias,
             self.lhs.output_field.fk_field)
 
         rhs, rhs_params = self.get_db_prep_lookup(self.rhs, connection)

@@ -4,12 +4,12 @@ djorm-ext-filtered-contenttypes
 [![Tests](https://github.com/mpasternak/djorm-ext-filtered-contenttypes/actions/workflows/tests.yml/badge.svg)](https://github.com/mpasternak/djorm-ext-filtered-contenttypes/actions/workflows/tests.yml)
 [![PyPI Version](https://img.shields.io/pypi/v/djorm-ext-filtered-contenttypes)](https://pypi.org/project/djorm-ext-filtered-contenttypes/)
 [![Python Version](https://img.shields.io/pypi/pyversions/djorm-ext-filtered-contenttypes)](https://pypi.org/project/djorm-ext-filtered-contenttypes/)
-![Django](https://img.shields.io/badge/django-5.2%20%7C%206.0-blue)
+![Django](https://img.shields.io/badge/django-5.2%20%7C%206.0%20%7C%206.1-blue)
 [![License](https://img.shields.io/github/license/mpasternak/djorm-ext-filtered-contenttypes)](LICENSE)
 
 A GenericForeignKey, that can be filtered & indexed server-side using subqueries.
 
-Supports Django 5.2 LTS and 6.0 on Python 3.10–3.14. (Previously: Django 1.7–1.11 on Python 2.7/3.5/3.6.)
+Supports Django 5.2 LTS, 6.0 and 6.1 on Python 3.10–3.14. (Previously: Django 1.7–1.11 on Python 2.7/3.5/3.6.)
 
 Created for and tested with PostgreSQL - feel free to submit patches for other databases.
 
@@ -39,7 +39,7 @@ Using pip:
 pip install djorm-ext-filtered-contenttypes
 ```
 
-Requires Python 3.10+ and Django 5.2 or 6.0. PostgreSQL is required — the filtering relies on PostgreSQL-specific compound-column subqueries.
+Requires Python 3.10+ and Django 5.2, 6.0 or 6.1. PostgreSQL is required — the filtering relies on PostgreSQL-specific compound-column subqueries.
 
 
 Supported versions
@@ -51,6 +51,7 @@ Every combination below is exercised in CI:
 |---------|:----:|:----:|:----:|:----:|:----:|
 | 5.2 LTS |  ✓   |  ✓   |  ✓   |  ✓   |  ✓   |
 | 6.0     |  —   |  —   |  ✓   |  ✓   |  ✓   |
+| 6.1     |  —   |  —   |  ✓   |  ✓   |  ✓   |
 
 
 Introduction
@@ -172,6 +173,15 @@ Now, let's play:
 
 Changelog
 ---------
+
+**Unreleased**
+
+- Added support for Django 6.1 (Python 3.12+), tested in CI alongside 5.2 LTS and 6.0.
+- Fixed lookup SQL generation for Django 6.1, which now quotes generated table aliases
+  (`"V0"` instead of `V0`). The compound `(content_type_id, object_id)` left-hand side is
+  now quoted through the compiler instead of being interpolated bare, which previously made
+  PostgreSQL fail with `missing FROM-clause entry for table "v0"` when a filtered queryset
+  was used as the right-hand side of `item__in_raw`.
 
 **0.5.1**
 

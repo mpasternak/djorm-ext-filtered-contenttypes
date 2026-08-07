@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         # Derived from requires-python (>=3.10) + Django constraint (>=5.2) and the
-        # upstream-supported Django series (5.2 LTS, 6.0) as of 2026-07.
+        # upstream-supported Django series (5.2 LTS, 6.0, 6.1) as of 2026-08.
         # Recompute this list on every re-run — do not hardcode long-term.
         include:
           # Django 5.2 LTS (Python 3.10-3.14)
@@ -33,6 +33,10 @@ jobs:
           - { python-version: "3.12", django-version: "6.0" }
           - { python-version: "3.13", django-version: "6.0" }
           - { python-version: "3.14", django-version: "6.0" }
+          # Django 6.1 (Python 3.12+)
+          - { python-version: "3.12", django-version: "6.1" }
+          - { python-version: "3.13", django-version: "6.1" }
+          - { python-version: "3.14", django-version: "6.1" }
 
     services:
       postgres:
@@ -70,7 +74,7 @@ jobs:
           uv pip install "django~=${{ matrix.django-version }}.0"
 
       - name: Run tests
-        run: uv run pytest
+        run: uv run --no-sync pytest
 
   lint:
     runs-on: ubuntu-latest
